@@ -49,3 +49,9 @@ def find_patients(patients: pd.DataFrame) -> pd.DataFrame:
     return patients[patients["conditions"].str.contains(diab_pattern)]
 
 
+def nth_highest_salary(employee: pd.DataFrame, N: int) -> pd.DataFrame:
+    ser = sorted(employee['salary'].unique(), reverse=True)
+    if len(ser) < N:
+        return pd.DataFrame([None], columns=['getNthHighestSalary(' + str(N) + ')'])
+
+    return pd.DataFrame([ser[N-1]], columns=['getNthHighestSalary(' + str(N) + ')'])
