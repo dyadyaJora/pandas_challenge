@@ -55,3 +55,18 @@ def nth_highest_salary(employee: pd.DataFrame, N: int) -> pd.DataFrame:
         return pd.DataFrame([None], columns=['getNthHighestSalary(' + str(N) + ')'])
 
     return pd.DataFrame([ser[N-1]], columns=['getNthHighestSalary(' + str(N) + ')'])
+
+
+def second_highest_salary(employee: pd.DataFrame) -> pd.DataFrame:
+    ser = sorted(employee['salary'].unique(), reverse=True)
+    if len(ser) < 2:
+        return pd.DataFrame([None], columns=['SecondHighestSalary'])
+
+    return pd.DataFrame([ser[1]], columns=['SecondHighestSalary'])
+
+
+def department_highest_salary(employee: pd.DataFrame, department: pd.DataFrame) -> pd.DataFrame:
+    df_res = employee.groupby(by=["departmentId"]).max()[['salary']]
+    df_res = df_res.merge(employee, on=["departmentId", "salary"])
+    df_res = df_res.merge(department, left_on="departmentId", right_on="id")[['name_y', 'name_x', 'salary']]
+    return df_res.rename(columns={'name_y': 'Department', 'name_x': 'Employee', 'salary': 'Salary'})
