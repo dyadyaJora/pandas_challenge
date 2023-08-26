@@ -87,3 +87,15 @@ def delete_duplicate_emails(person: pd.DataFrame) -> None:
 def delete_duplicate_emails_2(person: pd.DataFrame) -> None:
     person.sort_values(by="id", inplace=True)
     person.drop_duplicates(["email"], inplace=True)
+
+
+def rearrange_products_table(products: pd.DataFrame) -> pd.DataFrame:
+    # products = products.fillna(-1)
+    products = products.melt(
+        id_vars="product_id",
+        value_vars=["store1", "store2", "store3"],
+        value_name="price",
+        var_name="store",
+    )
+    return products.dropna()
+
