@@ -70,3 +70,20 @@ def department_highest_salary(employee: pd.DataFrame, department: pd.DataFrame) 
     df_res = df_res.merge(employee, on=["departmentId", "salary"])
     df_res = df_res.merge(department, left_on="departmentId", right_on="id")[['name_y', 'name_x', 'salary']]
     return df_res.rename(columns={'name_y': 'Department', 'name_x': 'Employee', 'salary': 'Salary'})
+
+
+def order_scores(scores: pd.DataFrame) -> pd.DataFrame:
+    scores['rank'] = scores['score'].rank(method='dense', ascending=False)
+    scores.sort_values(by=['rank'], inplace=True)
+    scores.drop(columns=['id'], inplace=True)
+    return scores
+
+
+def delete_duplicate_emails(person: pd.DataFrame) -> None:
+    person.sort_values(by='id', inplace=True)
+    person.drop(person[person['email'].duplicated()].index, inplace=True)
+
+
+def delete_duplicate_emails_2(person: pd.DataFrame) -> None:
+    person.sort_values(by="id", inplace=True)
+    person.drop_duplicates(["email"], inplace=True)
