@@ -99,3 +99,27 @@ def rearrange_products_table(products: pd.DataFrame) -> pd.DataFrame:
     )
     return products.dropna()
 
+
+def count_rich_customers(store: pd.DataFrame) -> pd.DataFrame:
+    uniq = store[store['amount'] > 500]['customer_id'].unique()
+    count = len(uniq)
+    return pd.DataFrame([count], columns=['rich_count'])
+
+
+def food_delivery(delivery: pd.DataFrame) -> pd.DataFrame:
+    tmp_count = delivery[delivery['order_date'] == delivery['customer_pref_delivery_date']]['delivery_id'].count()
+    d_count = delivery['delivery_id'].count()
+    res = round(tmp_count/d_count, 2)
+    return pd.DataFrame({'immediate_percentage': [res]})
+
+
+def count_salary_categories(accounts: pd.DataFrame) -> pd.DataFrame:
+    return pd.DataFrame({
+            'category': ['Low Salary', 'Average Salary', 'High Salary'],
+            'accounts_count': [
+                accounts[accounts.income < 20000].shape[0],
+                accounts[(accounts.income >= 20000) & (accounts.income <= 50000)].shape[0],
+                accounts[accounts.income > 50000].shape[0],
+            ],
+        })
+
