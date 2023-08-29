@@ -123,3 +123,23 @@ def count_salary_categories(accounts: pd.DataFrame) -> pd.DataFrame:
             ],
         })
 
+
+def total_time(employees: pd.DataFrame) -> pd.DataFrame:
+    employees['total_time'] = employees['out_time'] - employees['in_time']
+    return employees.groupby(by=["event_day", "emp_id"]).sum().reset_index()[['event_day', 'emp_id', 'total_time']].rename(columns={'event_day': 'day', })
+
+
+def game_analysis(activity: pd.DataFrame) -> pd.DataFrame:
+    return activity.groupby('player_id')['event_date'].min().reset_index().rename(columns={'event_date': 'first_login'})
+
+
+def count_unique_subjects(teacher: pd.DataFrame) -> pd.DataFrame:
+    return teacher.groupby('teacher_id')["subject_id"].nunique().reset_index().rename(columns={'subject_id': 'cnt'})
+
+
+def largest_orders(orders: pd.DataFrame) -> pd.DataFrame:
+    orders = orders.groupby('customer_number').count().reset_index()
+    orders.sort_values(by='order_number', inplace=True, ascending=False)
+    if orders.shape[0] == 0:
+        return orders[['customer_number']]
+    return orders[['customer_number']].iloc[[0]]
