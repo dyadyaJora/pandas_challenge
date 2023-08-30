@@ -143,3 +143,7 @@ def largest_orders(orders: pd.DataFrame) -> pd.DataFrame:
     if orders.shape[0] == 0:
         return orders[['customer_number']]
     return orders[['customer_number']].iloc[[0]]
+
+
+def daily_leads_and_partners(daily_sales: pd.DataFrame) -> pd.DataFrame:
+    return daily_sales.groupby(by=['date_id', 'make_name']).nunique().reset_index().rename(columns={'lead_id':'unique_leads', 'partner_id': 'unique_partners'})
