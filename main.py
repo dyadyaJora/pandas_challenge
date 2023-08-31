@@ -137,6 +137,11 @@ def count_unique_subjects(teacher: pd.DataFrame) -> pd.DataFrame:
     return teacher.groupby('teacher_id')["subject_id"].nunique().reset_index().rename(columns={'subject_id': 'cnt'})
 
 
+def find_classes(courses: pd.DataFrame) -> pd.DataFrame:
+    courses = courses.groupby('class').count()
+    return courses[courses['student'] >= 5].reset_index()[['class']]
+
+
 def largest_orders(orders: pd.DataFrame) -> pd.DataFrame:
     orders = orders.groupby('customer_number').count().reset_index()
     orders.sort_values(by='order_number', inplace=True, ascending=False)
@@ -147,3 +152,38 @@ def largest_orders(orders: pd.DataFrame) -> pd.DataFrame:
 
 def daily_leads_and_partners(daily_sales: pd.DataFrame) -> pd.DataFrame:
     return daily_sales.groupby(by=['date_id', 'make_name']).nunique().reset_index().rename(columns={'lead_id':'unique_leads', 'partner_id': 'unique_partners'})
+
+
+def sales_person_tmp(sales_person: pd.DataFrame, company: pd.DataFrame, orders: pd.DataFrame) -> pd.DataFrame:
+    tmp = pd.merge(orders, company, on="com_id")
+    tmp = tmp[tmp['name'] == 'RED'].drop_duplicates(subset=['sales_id'])
+    tmp = pd.merge(sales_person, tmp, how='left', on='sales_id', indicator=True)
+    return tmp[tmp['_merge'] == 'left_only'][['name_x']].rename(columns={'name_x': 'name'})
+
+
+def sales_person(sales_person: pd.DataFrame, company: pd.DataFrame, orders: pd.DataFrame) -> pd.DataFrame:
+    return sales_person[
+        ~sales_person['sales_id'].isin(
+            pd.merge(
+                left=orders,
+                right=company[company['name'] == 'RED'],
+                on='com_id',
+                how='inner',
+            )['sales_id'].unique()
+        )
+    ][['name']]
+
+
+def categorize_products(activities: pd.DataFrame) -> pd.DataFrame:
+    activities = activities.groupby("sell_date")
+    names_df = activities.agg(lambda x: ",".join(sorted(set(x)))).reset_index().rename(columns={"product": "products"})
+    count_df = activities.nunique().rename(columns={"product": "num_sold"}).reset_index()
+    return count_df.merge(names_df)
+
+
+def find_managers(employee: pd.DataFrame) -> pd.DataFrame:
+    m_count = employee.groupby('managerId').size().reset_index(name='directReports')
+    result = m_count[m_count['directReports'] >= 5]
+    result = result.merge(employee[['id', 'name']], left_on='managerId', right_on='id', how='inner')
+    result = result[['name']]
+    return result
