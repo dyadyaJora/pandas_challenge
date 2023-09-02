@@ -189,6 +189,10 @@ def find_managers(employee: pd.DataFrame) -> pd.DataFrame:
     return result
 
 
+def replace_employee_id(employees: pd.DataFrame, employee_uni: pd.DataFrame) -> pd.DataFrame:
+    return pd.merge(employees, employee_uni, on='id', how='left')[['unique_id', 'name']]
+
+
 def students_and_examinations(students: pd.DataFrame, subjects: pd.DataFrame, examinations: pd.DataFrame) -> pd.DataFrame:
     examinations = examinations.groupby(['student_id', 'subject_name']).agg(attended_exams=('subject_name', 'count')).reset_index()
     students = students.merge(subjects, how='cross')
