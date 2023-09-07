@@ -49,12 +49,12 @@ def find_patients(patients: pd.DataFrame) -> pd.DataFrame:
     return patients[patients["conditions"].str.contains(diab_pattern)]
 
 
-def nth_highest_salary(employee: pd.DataFrame, N: int) -> pd.DataFrame:
+def nth_highest_salary(employee: pd.DataFrame, n: int) -> pd.DataFrame:
     ser = sorted(employee['salary'].unique(), reverse=True)
-    if len(ser) < N:
-        return pd.DataFrame([None], columns=['getNthHighestSalary(' + str(N) + ')'])
+    if len(ser) < n:
+        return pd.DataFrame([None], columns=['getNthHighestSalary(' + str(n) + ')'])
 
-    return pd.DataFrame([ser[N-1]], columns=['getNthHighestSalary(' + str(N) + ')'])
+    return pd.DataFrame([ser[n - 1]], columns=['getNthHighestSalary(' + str(n) + ')'])
 
 
 def second_highest_salary(employee: pd.DataFrame) -> pd.DataFrame:
@@ -126,7 +126,8 @@ def count_salary_categories(accounts: pd.DataFrame) -> pd.DataFrame:
 
 def total_time(employees: pd.DataFrame) -> pd.DataFrame:
     employees['total_time'] = employees['out_time'] - employees['in_time']
-    return employees.groupby(by=["event_day", "emp_id"]).sum().reset_index()[['event_day', 'emp_id', 'total_time']].rename(columns={'event_day': 'day', })
+    return employees.groupby(by=["event_day", "emp_id"]).sum().reset_index()[['event_day', 'emp_id', 'total_time']]\
+        .rename(columns={'event_day': 'day', })
 
 
 def game_analysis(activity: pd.DataFrame) -> pd.DataFrame:
@@ -151,7 +152,8 @@ def largest_orders(orders: pd.DataFrame) -> pd.DataFrame:
 
 
 def daily_leads_and_partners(daily_sales: pd.DataFrame) -> pd.DataFrame:
-    return daily_sales.groupby(by=['date_id', 'make_name']).nunique().reset_index().rename(columns={'lead_id':'unique_leads', 'partner_id': 'unique_partners'})
+    return daily_sales.groupby(by=['date_id', 'make_name']).nunique().reset_index()\
+        .rename(columns={'lead_id': 'unique_leads', 'partner_id': 'unique_partners'})
 
 
 def sales_person_tmp(sales_person: pd.DataFrame, company: pd.DataFrame, orders: pd.DataFrame) -> pd.DataFrame:
@@ -193,8 +195,12 @@ def replace_employee_id(employees: pd.DataFrame, employee_uni: pd.DataFrame) -> 
     return pd.merge(employees, employee_uni, on='id', how='left')[['unique_id', 'name']]
 
 
-def students_and_examinations(students: pd.DataFrame, subjects: pd.DataFrame, examinations: pd.DataFrame) -> pd.DataFrame:
-    examinations = examinations.groupby(['student_id', 'subject_name']).agg(attended_exams=('subject_name', 'count')).reset_index()
+def students_and_examinations(
+        students: pd.DataFrame,
+        subjects: pd.DataFrame,
+        examinations: pd.DataFrame) -> pd.DataFrame:
+    examinations = examinations.groupby(['student_id', 'subject_name']).agg(attended_exams=('subject_name', 'count'))\
+        .reset_index()
     students = students.merge(subjects, how='cross')
     examinations = examinations.merge(students, on=['student_id', 'subject_name'],how='right')
     examinations = examinations.fillna(0)
