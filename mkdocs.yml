@@ -1,0 +1,28 @@
+site_name: 30 days of Pandas!
+site_author: '@dyadyajora'
+site_description: Notes for 30 days of Pandas leetcode challange.
+site_url: https://pandas-challenge.jora.dev/
+repo_name: dyadyajora/pandas_challenge
+repo_url: https://github.com/dyadyajora/pandas_challenge
+edit_uri: ""
+theme:
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  name: material
+  favicon: img/favicon.png
+  logo: img/logo.svg
+  features:
+    - navigation.footer
+nav:
+  - Home: index.md
+  - Notes: notes.md
+  - About: about.md
+plugins:
+  - search
