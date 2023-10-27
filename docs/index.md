@@ -1,4 +1,4 @@
-# Challenge Overview
+# Pandas Challenge Overview
 
 ![image](img/Pandas.gif)
 
