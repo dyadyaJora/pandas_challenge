@@ -7,13 +7,13 @@ repo_url: https://github.com/dyadyajora/pandas_challenge
 edit_uri: ""
 theme:
   palette:
-    - scheme: default
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
     - scheme: slate
       toggle:
         icon: material/brightness-4
+        name: Switch to dark mode
+    - scheme: default
+      toggle:
+        icon: material/brightness-7
         name: Switch to light mode
   name: material
   favicon: img/favicon.png

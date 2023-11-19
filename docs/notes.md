@@ -6,6 +6,8 @@
 To get started with this library, you can find information in the [official pandas documentation](https://pandas.pydata.org/docs/). Also extremely useful pandas commands cheat sheet with images could be found by the [link](https://pandas.pydata.org/Pandas_Cheat_Sheet.pdf).
 In this article I want to create an overview of [30 days of Pandas](https://leetcode.com/studyplan/30-days-of-pandas/) Leetcode's stydy plan, highlight examples of convenient data manipulation methods, and take a look how data retrieval methods in pandas correlates with SQL
 
+![image](img/python_glass.jpg)
+
 ## Overview
 
 ...
