@@ -37,4 +37,4 @@ jobs:
         aws-region: ${{ env.AWS_REGION }}
     - name:  Copy to s3
       run: |
-        aws s3 cp --recursive ./site/* s3://${{ secrets.BUCKET_NAME }}/
+        aws s3 sync ./site/ s3://${{ secrets.BUCKET_NAME }}/
