@@ -3,7 +3,7 @@ name: Build mkdocs site and upload to S3 - develop version
 on:
   push:
     branches:
-    - "main"
+    - "master"
 
 env:
   AWS_REGION : "us-east-1"
