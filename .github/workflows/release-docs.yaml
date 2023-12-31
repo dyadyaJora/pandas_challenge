@@ -1,0 +1,39 @@
+name: Build mkdocs site and upload to S3 - develop version
+
+on:
+  push:
+    branches:
+    - "main"
+
+env:
+  AWS_REGION : "us-east-1"
+
+permissions:
+      id-token: write
+      contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download source
+      uses: actions/checkout@v3
+    - name: Install Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    - name: Install Python dependencies
+      run: |
+        pip install -r requirements.txt
+    - name: Build site
+      run: mkdocs build
+    - name: configure aws credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        role-to-assume: ${{ secrets.ASSUME_ROLE }}
+        role-session-name: samplerolesession
+        aws-region: ${{ env.AWS_REGION }}
+    - name:  Copy to s3
+      run: |
+        aws s3 sync ./site/ s3://${{ secrets.BUCKET_NAME }}/
