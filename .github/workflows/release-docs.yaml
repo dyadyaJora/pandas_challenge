@@ -1,10 +1,9 @@
-name: Build mkdocs site and upload to S3
+name: Build mkdocs site and upload to S3 - develop version
 
 on:
   push:
     branches:
-#    - "main"
-    - "**"
+    - "main"
 
 env:
   AWS_REGION : "us-east-1"
