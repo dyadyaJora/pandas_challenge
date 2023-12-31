@@ -38,4 +38,4 @@ jobs:
 
     - name:  Copy to s3
       run: |
-        aws s3 cp ./site/index.html s3://${{ secrets.BUCKET_NAME }}/
+        aws s3 cp ./site/index.html s3://${{ secrets.BUCKET_NAME }}/index.html
