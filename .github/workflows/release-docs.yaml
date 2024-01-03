@@ -37,3 +37,6 @@ jobs:
     - name:  Copy to s3
       run: |
         aws s3 sync ./site/ s3://${{ secrets.BUCKET_NAME }}/
+    - name: Invalidate CloudFront cache
+      run: |
+        aws cloudfront create-invalidation --distribution-id ${{ secrets.DISTRIBUTION_ID }} --paths "/*"
