@@ -24,6 +24,7 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
+        cache: pip
     - name: Install Python dependencies
       run: |
         pip install -r requirements.txt
@@ -34,11 +35,11 @@ jobs:
       run: |
         echo "starting"
         git rev-list --tags --max-count=1
-        function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
-        echo "THIS_VERSION=$(cat version | sed s/^v//)" >> $GITHUB_ENV
-        echo "THIS_VERSION_COMPARABLE=$(version $(cat version | sed s/^v//))" >> $GITHUB_ENV
-        echo "LATEST_VERSION_COMPARABLE=$(version $(git describe --tags $(git rev-list --tags --max-count=1) | sed s/^v// 2> /dev/null || echo '0'))" >> $GITHUB_ENV
-        echo "$THIS_VERSION $THIS_VERSION_COMPARABLE $LATEST_VERSION_COMPARABLE"
+#        function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
+#        echo "THIS_VERSION=$(cat version | sed s/^v//)" >> $GITHUB_ENV
+#        echo "THIS_VERSION_COMPARABLE=$(version $(cat version | sed s/^v//))" >> $GITHUB_ENV
+#        echo "LATEST_VERSION_COMPARABLE=$(version $(git describe --tags $(git rev-list --tags --max-count=1) | sed s/^v// 2> /dev/null || echo '0'))" >> $GITHUB_ENV
+#        echo "$THIS_VERSION $THIS_VERSION_COMPARABLE $LATEST_VERSION_COMPARABLE"
 #    - name: configure aws credentials
 #      uses: aws-actions/configure-aws-credentials@v1
 #      with:
