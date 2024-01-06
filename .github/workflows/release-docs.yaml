@@ -44,6 +44,7 @@ jobs:
         echo "THIS_VERSION_COMPARABLE=$(version $(cat version | sed s/^v//))" >> $GITHUB_ENV
         echo "LATEST_VERSION_COMPARABLE=$(version $(git describe --tags $(git rev-list --tags --max-count=1) | sed s/^v// 2> /dev/null || echo '0'))" >> $GITHUB_ENV
         echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}"  >> $GITHUB_ENV
+        echo "SHA_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
     - name: configure LAB AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
@@ -52,7 +53,10 @@ jobs:
         aws-region: ${{ env.AWS_REGION_LAB }}
     - name:  Copy to LAB S3
       run: |
-        aws s3 sync ./site/ s3://${{ secrets.BUCKET_NAME_LAB }}/develop/v1/
+        replace_special_characters() { local input_string="$1"; local replaced_string=$(echo "$input_string" | sed 's/[^a-zA-Z0-9]/_/g'); echo "$replaced_string"; }
+        escaped_branch_name=$(replace_special_characters "$BRANCH_NAME")
+        date_prefix=$(date +%Y-%m-%d-%H-%M-%S_)
+        aws s3 sync ./site/ s3://${{ secrets.BUCKET_NAME_LAB }}/$escaped_branch_name/$date_prefix$SHA_SHORT/
     - name: Create Github Release
       if: ${{ github.ref == 'refs/heads/master' && env.THIS_VERSION_COMPARABLE > env.LATEST_VERSION_COMPARABLE }}
       id: create_release
