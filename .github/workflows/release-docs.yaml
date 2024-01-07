@@ -68,7 +68,7 @@ jobs:
         last_branch=$(tail -1 .branches_old)
         head -${{ env.MAX_BRANCH_DEPLOYED }} .branches_old > .branches
         aws s3 cp .branches s3://${{ secrets.BUCKET_NAME_LAB }}/
-        [ "$lines_count" -gt "-${{ env.MAX_BRANCH_DEPLOYED }}" ] && aws s3 rm --recursive s3://${{ secrets.BUCKET_NAME_LAB }}/$last_branch/
+        [ "$lines_count" -gt "${{ env.MAX_BRANCH_DEPLOYED }}" ] && aws s3 rm --recursive s3://${{ secrets.BUCKET_NAME_LAB }}/$last_branch/
 
         echo "Cleanup commit folders"
         aws s3 ls s3://pandas-challenge-github-action-test-bucket/$escaped_branch_name/ | awk '$NF ~ /\/$/ { print $NF }' > .commit_versions
