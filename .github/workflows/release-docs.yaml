@@ -67,7 +67,8 @@ jobs:
         cat .branches
         aws s3 cp .branches s3://${{ secrets.BUCKET_NAME_LAB }}/
         echo "Branches uploaded!"
-        [ "$lines_count" -gt "5" ] && aws s3 rm --recursive s3://${{ secrets.BUCKET_NAME_LAB }}/$last_branch/
+        aws s3 rm --recursive s3://${{ secrets.BUCKET_NAME_LAB }}/$last_branch/
+#        [ "$lines_count" -gt "5" ] && aws s3 rm --recursive s3://${{ secrets.BUCKET_NAME_LAB }}/$last_branch/
     - name: Create Github Release
       if: ${{ github.ref == 'refs/heads/master' && env.THIS_VERSION_COMPARABLE > env.LATEST_VERSION_COMPARABLE }}
       id: create_release
