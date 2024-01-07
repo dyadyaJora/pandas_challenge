@@ -94,7 +94,7 @@ jobs:
         fi
     - name: Print LAB DOCS_LINK
       run: |
-        echo "Docs deploy is available at $DOC_LINK"
+        echo "Docs deploy is available at $DOCS_LINK"
     - name: Create Github Release
       if: ${{ github.ref == 'refs/heads/master' && env.THIS_VERSION_COMPARABLE > env.LATEST_VERSION_COMPARABLE }}
       id: create_release
