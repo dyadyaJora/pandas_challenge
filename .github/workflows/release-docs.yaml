@@ -92,20 +92,9 @@ jobs:
         else
             echo "No need to remove versions."
         fi
-    - name: Check if triggered by pull request
-      if: ${{ github.event_name == 'pull_request' }}
-      uses: actions/github-script@v6
-      env:
-        DOCS_LINK: ${{ env.DOCS_LINK }}
-      with:
-        script: |
-          const { DOCS_LINK } = process.env
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: 'Docs deployed to ' + DOCS_LINK
-          })
+    - name: Print LAB DOCS_LINK
+      run: |
+        echo "Docs deploy is available at $DOC_LINK"
     - name: Create Github Release
       if: ${{ github.ref == 'refs/heads/master' && env.THIS_VERSION_COMPARABLE > env.LATEST_VERSION_COMPARABLE }}
       id: create_release
