@@ -60,12 +60,15 @@ jobs:
         aws s3 sync ./site/ s3://${{ secrets.BUCKET_NAME_LAB }}/$escaped_branch_name/$date_prefix$SHA_SHORT/
 
         aws s3 cp s3://${{ secrets.BUCKET_NAME_LAB }}/.branches .
+        echo "0"
+        cat .branches
         bash ./scripts/s3branchrotate.sh $escaped_branch_name .branches
         echo "1"
         cat .branches
         lines_count=$(cat .branches | wc -l)
         last_branch=$(tail -1 .branches)
-        head -5 .branches > .branches
+        head -5 .branches
+#        head -5 .branches > .branches
         echo "2"
         cat .branches
         aws s3 cp .branches s3://${{ secrets.BUCKET_NAME_LAB }}/
