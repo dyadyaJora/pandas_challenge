@@ -3,3 +3,5 @@ data/
 .idea/
 __pycache__/
 site/
+.tmp/
+.branches
