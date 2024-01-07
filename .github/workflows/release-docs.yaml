@@ -115,7 +115,7 @@ jobs:
         aws s3 sync ./site/ s3://${{ secrets.BUCKET_NAME }}/latest
 
         echo "Cleanup OLD PRO version folders"
-        aws s3 ls s3://${{ secrets.BUCKET_NAME }}/ | awk '$NF ~ /\/$/ { print $NF }' | sed -E s/^latest$//g | grep -Ev "^$" > .pro_versions
+        aws s3 ls s3://${{ secrets.BUCKET_NAME }}/ | awk '$NF ~ /\/$/ { print $NF }' | sed -E 's|^latest/$||g' | grep -Ev "^$" > .pro_versions
         cat .pro_versions  # Debug: print the versions
 
         oldest_version=$(head -1 .pro_versions)
@@ -125,7 +125,7 @@ jobs:
 
         if [ "$versions_count" -gt "${{ env.MAX_PRO_VERSIONS }}" ]; then
             echo "Removing oldest version: $oldest_version"
-            aws s3 rm --recursive s3://${{ secrets.BUCKET_NAME }}/$oldest_version || echo "Error removing version"
+            aws s3 rm --recursive s3://${{ secrets.BUCKET_NAME }}/$oldest_version/ || echo "Error removing version"
         else
             echo "No need to remove versions."
         fi
