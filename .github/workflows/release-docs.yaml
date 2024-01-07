@@ -98,7 +98,7 @@ jobs:
         body: |
           See the CHANGELOG for a list of features included in this release
         draft: false
-        prerelease: true
+        prerelease: false
     - name: configure PRO AWS credentials
 #      if: ${{ github.ref == 'refs/heads/master' && env.THIS_VERSION_COMPARABLE > env.LATEST_VERSION_COMPARABLE }}
       uses: aws-actions/configure-aws-credentials@v1
