@@ -89,12 +89,12 @@ jobs:
     - name: Create Github Release
 #      if: ${{ github.ref == 'refs/heads/master' && env.THIS_VERSION_COMPARABLE > env.LATEST_VERSION_COMPARABLE }}
       id: create_release
-      uses: actions/create-release@latest
+      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: v${{ env.THIS_VERSION }}
-        release_name: Release v${{ env.THIS_VERSION }}
+        name: Release v${{ env.THIS_VERSION }}
         body: |
           See the CHANGELOG for a list of features included in this release
         draft: false
