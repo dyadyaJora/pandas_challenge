@@ -2,9 +2,9 @@ name: Build mkdocs site and upload to S3 - develop version
 
 on:
   push:
-    paths:
-      - 'docs/**'
-      - 'mkdocs.yaml'
+    # paths:
+    #   - 'docs/**'
+    #   - 'mkdocs.yaml'
     branches:
     - "master"
   pull_request:
