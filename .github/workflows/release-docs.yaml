@@ -59,15 +59,15 @@ jobs:
         date_prefix=$(date +%Y-%m-%d-%H-%M-%S_)
         aws s3 sync ./site/ s3://${{ secrets.BUCKET_NAME_LAB }}/$escaped_branch_name/$date_prefix$SHA_SHORT/
 
-        aws s3 cp s3://${{ secrets.BUCKET_NAME_LAB }}/.branches .
+        aws s3 cp s3://${{ secrets.BUCKET_NAME_LAB }}/.branches .branches_old
         echo "0"
-        cat .branches
-        bash ./scripts/s3branchrotate.sh $escaped_branch_name .branches
+        cat .branches_old
+        bash ./scripts/s3branchrotate.sh $escaped_branch_name .branches_old
         echo "1"
-        cat .branches
-        lines_count=$(cat .branches | wc -l)
-        last_branch=$(tail -1 .branches)
-        head -5 .branches
+        cat .branches_old
+        lines_count=$(cat .branches_old | wc -l)
+        last_branch=$(tail -1 .branches_old)
+        head -5 .branches_old > .branches
         echo "2"
         cat .branches
         aws s3 cp .branches s3://${{ secrets.BUCKET_NAME_LAB }}/
