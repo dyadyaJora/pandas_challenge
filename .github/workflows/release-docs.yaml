@@ -72,9 +72,19 @@ jobs:
 
         echo "Cleanup commit folders"
         aws s3 ls s3://pandas-challenge-github-action-test-bucket/$escaped_branch_name/ | awk '$NF ~ /\/$/ { print $NF }' > .commit_versions
+        cat .commit_versions  # Debug: print the versions
+
         oldest_version=$(head -1 .commit_versions)
         versions_count=$(cat .commit_versions | wc -l)
-        [ "$versions_count" -gt "${{ env.MAX_COMMIT_PER_BRANCH_DEPLOYED }}" ] && aws s3 rm --recursive s3://${{ secrets.BUCKET_NAME_LAB }}/$escaped_branch_name/$oldest_version
+        echo "Oldest version: $oldest_version"
+        echo "Versions count: $versions_count"
+
+        if [ "$versions_count" -gt "${{ env.MAX_COMMIT_PER_BRANCH_DEPLOYED }}" ]; then
+            echo "Removing oldest version: $oldest_version"
+            aws s3 rm --recursive s3://${{ secrets.BUCKET_NAME_LAB }}/$escaped_branch_name/$oldest_version || echo "Error removing version"
+        else
+            echo "No need to remove versions."
+        fi
     - name: Create Github Release
       if: ${{ github.ref == 'refs/heads/master' && env.THIS_VERSION_COMPARABLE > env.LATEST_VERSION_COMPARABLE }}
       id: create_release
