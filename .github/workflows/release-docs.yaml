@@ -12,6 +12,8 @@ on:
 env:
   AWS_REGION : "us-east-1"
   AWS_REGION_LAB: "us-east-1"
+  MAX_BRANCH_DEPLOYED: 5
+  MAX_COMMIT_PER_BRANCH_DEPLOYED: 3
 
 permissions:
       id-token: write
@@ -59,22 +61,20 @@ jobs:
         date_prefix=$(date +%Y-%m-%d-%H-%M-%S_)
         aws s3 sync ./site/ s3://${{ secrets.BUCKET_NAME_LAB }}/$escaped_branch_name/$date_prefix$SHA_SHORT/
 
+        echo "Cleanup branch folders"
         aws s3 cp s3://${{ secrets.BUCKET_NAME_LAB }}/.branches .branches_old
-        echo "0"
-        cat .branches_old
         bash ./scripts/s3branchrotate.sh $escaped_branch_name .branches_old
-        echo "1"
-        cat .branches_old
         lines_count=$(cat .branches_old | wc -l)
         last_branch=$(tail -1 .branches_old)
-        head -5 .branches_old > .branches
-        echo "2"
-        cat .branches
+        head -${{ env.MAX_BRANCH_DEPLOYED }} .branches_old > .branches
         aws s3 cp .branches s3://${{ secrets.BUCKET_NAME_LAB }}/
-        echo "Branches uploaded!"
-        echo "$lines_count"
-        echo "$last_branch"
-        [ "$lines_count" -gt "5" ] && aws s3 rm --recursive s3://${{ secrets.BUCKET_NAME_LAB }}/$last_branch/
+        [ "$lines_count" -gt "-${{ env.MAX_BRANCH_DEPLOYED }}" ] && aws s3 rm --recursive s3://${{ secrets.BUCKET_NAME_LAB }}/$last_branch/
+
+        echo "Cleanup commit folders"
+        aws s3 ls s3://pandas-challenge-github-action-test-bucket/$escaped_branch_name/ | awk '$NF ~ /\/$/ { print $NF }' > .commit_versions
+        oldest_version=$(head -1 .commit_versions)
+        versions_count=$(cat .commit_version | wc -l)
+        [ "versions_count" -gt "-${{ env.MAX_COMMIT_PER_BRANCH_DEPLOYED }}" ] && aws s3 rm --recursive s3://${{ secrets.BUCKET_NAME_LAB }}/$escaped_branch_name/$oldest_version
     - name: Create Github Release
       if: ${{ github.ref == 'refs/heads/master' && env.THIS_VERSION_COMPARABLE > env.LATEST_VERSION_COMPARABLE }}
       id: create_release
