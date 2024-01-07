@@ -4,7 +4,6 @@ on:
   push:
     branches:
     - "master"
-    - "**/**"
   pull_request:
     branches:
       - "master"
@@ -87,7 +86,7 @@ jobs:
             echo "No need to remove versions."
         fi
     - name: Create Github Release
-#      if: ${{ github.ref == 'refs/heads/master' && env.THIS_VERSION_COMPARABLE > env.LATEST_VERSION_COMPARABLE }}
+      if: ${{ github.ref == 'refs/heads/master' && env.THIS_VERSION_COMPARABLE > env.LATEST_VERSION_COMPARABLE }}
       id: create_release
       uses: softprops/action-gh-release@v1
       env:
@@ -100,14 +99,14 @@ jobs:
         draft: false
         prerelease: false
     - name: configure PRO AWS credentials
-#      if: ${{ github.ref == 'refs/heads/master' && env.THIS_VERSION_COMPARABLE > env.LATEST_VERSION_COMPARABLE }}
+      if: ${{ github.ref == 'refs/heads/master' && env.THIS_VERSION_COMPARABLE > env.LATEST_VERSION_COMPARABLE }}
       uses: aws-actions/configure-aws-credentials@v1
       with:
         role-to-assume: ${{ secrets.ASSUME_ROLE }}
         role-session-name: samplerolesession
         aws-region: ${{ env.AWS_REGION }}
     - name:  Copy to PRO S3
-#      if: ${{ github.ref == 'refs/heads/master' && env.THIS_VERSION_COMPARABLE > env.LATEST_VERSION_COMPARABLE }}
+      if: ${{ github.ref == 'refs/heads/master' && env.THIS_VERSION_COMPARABLE > env.LATEST_VERSION_COMPARABLE }}
       run: |
         version=$(cat version)
         date_prefix=$(date +%Y-%m-%d-%H-%M-%S_)
