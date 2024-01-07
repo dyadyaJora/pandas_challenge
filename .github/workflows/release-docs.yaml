@@ -2,6 +2,9 @@ name: Build mkdocs site and upload to S3 - develop version
 
 on:
   push:
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yaml'
     branches:
     - "master"
   pull_request:
@@ -14,6 +17,7 @@ env:
   MAX_BRANCH_DEPLOYED: 5
   MAX_COMMIT_PER_BRANCH_DEPLOYED: 3
   MAX_PRO_VERSIONS: 3
+  BUCKET_NAME_LAB: "pandas-challenge-github-action-test-bucket"
 
 permissions:
       id-token: write
@@ -59,19 +63,21 @@ jobs:
 
         escaped_branch_name=$(replace_special_characters "$BRANCH_NAME")
         date_prefix=$(date +%Y-%m-%d-%H-%M-%S_)
-        aws s3 sync ./site/ s3://${{ secrets.BUCKET_NAME_LAB }}/$escaped_branch_name/$date_prefix$SHA_SHORT/
+        aws s3 sync ./site/ s3://${{ env.BUCKET_NAME_LAB }}/$escaped_branch_name/$date_prefix$SHA_SHORT/
+
+        echo "DOCS_LINK=https://${{ env.BUCKET_NAME_LAB }}.s3.amazonaws.com/$escaped_branch_name/$date_prefix$SHA_SHORT/index.html" >> $GITHUB_ENV
 
         echo "Cleanup branch folders"
-        aws s3 cp s3://${{ secrets.BUCKET_NAME_LAB }}/.branches .branches_old
+        aws s3 cp s3://${{ env.BUCKET_NAME_LAB }}/.branches .branches_old
         bash ./scripts/s3branchrotate.sh $escaped_branch_name .branches_old
         lines_count=$(cat .branches_old | wc -l)
         last_branch=$(tail -1 .branches_old)
         head -${{ env.MAX_BRANCH_DEPLOYED }} .branches_old > .branches
-        aws s3 cp .branches s3://${{ secrets.BUCKET_NAME_LAB }}/
-        [ "$lines_count" -gt "${{ env.MAX_BRANCH_DEPLOYED }}" ] && aws s3 rm --recursive s3://${{ secrets.BUCKET_NAME_LAB }}/$last_branch/
+        aws s3 cp .branches s3://${{ env.BUCKET_NAME_LAB }}/
+        [ "$lines_count" -gt "${{ env.MAX_BRANCH_DEPLOYED }}" ] && aws s3 rm --recursive s3://${{ env.BUCKET_NAME_LAB }}/$last_branch/
 
         echo "Cleanup commit folders"
-        aws s3 ls s3://${{ secrets.BUCKET_NAME_LAB }}/$escaped_branch_name/ | awk '$NF ~ /\/$/ { print $NF }' > .commit_versions
+        aws s3 ls s3://${{ env.BUCKET_NAME_LAB }}/$escaped_branch_name/ | awk '$NF ~ /\/$/ { print $NF }' > .commit_versions
         cat .commit_versions  # Debug: print the versions
 
         oldest_version=$(head -1 .commit_versions)
@@ -81,10 +87,24 @@ jobs:
 
         if [ "$versions_count" -gt "${{ env.MAX_COMMIT_PER_BRANCH_DEPLOYED }}" ]; then
             echo "Removing oldest version: $oldest_version"
-            aws s3 rm --recursive s3://${{ secrets.BUCKET_NAME_LAB }}/$escaped_branch_name/$oldest_version || echo "Error removing version"
+            aws s3 rm --recursive s3://${{ env.BUCKET_NAME_LAB }}/$escaped_branch_name/$oldest_version || echo "Error removing version"
         else
             echo "No need to remove versions."
         fi
+    - name: Check if triggered by pull request
+      if: ${{ github.event_name == 'pull_request' }}
+      uses: actions/github-script@v6
+      env:
+        DOCS_LINK: ${{ env.DOCS_LINK }}
+      with:
+        script: |
+          const { DOCS_LINK } = process.env
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: 'Docs deployed to ' + DOCS_LINK
+          })
     - name: Create Github Release
       if: ${{ github.ref == 'refs/heads/master' && env.THIS_VERSION_COMPARABLE > env.LATEST_VERSION_COMPARABLE }}
       id: create_release
