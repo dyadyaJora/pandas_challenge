@@ -11,6 +11,9 @@ on:
 
 env:
   AWS_REGION : "us-east-1"
+  AWS_REGION_LAB: "us-east-1"
+  MAX_BRANCH_DEPLOYED: 5
+  MAX_COMMIT_PER_BRANCH_DEPLOYED: 3
 
 permissions:
       id-token: write
@@ -42,8 +45,8 @@ jobs:
         echo "THIS_VERSION=$(cat version | sed s/^v//)" >> $GITHUB_ENV
         echo "THIS_VERSION_COMPARABLE=$(version $(cat version | sed s/^v//))" >> $GITHUB_ENV
         echo "LATEST_VERSION_COMPARABLE=$(version $(git describe --tags $(git rev-list --tags --max-count=1) | sed s/^v// 2> /dev/null || echo '0'))" >> $GITHUB_ENV
-        echo "$THIS_VERSION $THIS_VERSION_COMPARABLE $LATEST_VERSION_COMPARABLE"
-#    - name: Create Github Release
+        echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}"  >> $GITHUB_ENV
+        echo "SHA_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
     - name: configure LAB AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
@@ -52,16 +55,52 @@ jobs:
         aws-region: ${{ env.AWS_REGION_LAB }}
     - name:  Copy to LAB S3
       run: |
-        aws s3 sync ./site/ s3://${{ secrets.BUCKET_NAME }}/
+        replace_special_characters() { local input_string="$1"; local replaced_string=$(echo "$input_string" | sed 's/[^a-zA-Z0-9]/_/g'); echo "$replaced_string"; }
+
+        escaped_branch_name=$(replace_special_characters "$BRANCH_NAME")
+        date_prefix=$(date +%Y-%m-%d-%H-%M-%S_)
+        aws s3 sync ./site/ s3://${{ secrets.BUCKET_NAME_LAB }}/$escaped_branch_name/$date_prefix$SHA_SHORT/
+
+        echo "Cleanup branch folders"
+        aws s3 cp s3://${{ secrets.BUCKET_NAME_LAB }}/.branches .branches_old
+        bash ./scripts/s3branchrotate.sh $escaped_branch_name .branches_old
+        lines_count=$(cat .branches_old | wc -l)
+        last_branch=$(tail -1 .branches_old)
+        head -${{ env.MAX_BRANCH_DEPLOYED }} .branches_old > .branches
+        aws s3 cp .branches s3://${{ secrets.BUCKET_NAME_LAB }}/
+        [ "$lines_count" -gt "-${{ env.MAX_BRANCH_DEPLOYED }}" ] && aws s3 rm --recursive s3://${{ secrets.BUCKET_NAME_LAB }}/$last_branch/
+
+        echo "Cleanup commit folders"
+        aws s3 ls s3://pandas-challenge-github-action-test-bucket/$escaped_branch_name/ | awk '$NF ~ /\/$/ { print $NF }' > .commit_versions
+        oldest_version=$(head -1 .commit_versions)
+        versions_count=$(cat .commit_versions | wc -l)
+        [ "$versions_count" -gt "-${{ env.MAX_COMMIT_PER_BRANCH_DEPLOYED }}" ] && aws s3 rm --recursive s3://${{ secrets.BUCKET_NAME_LAB }}/$escaped_branch_name/$oldest_version
+    - name: Create Github Release
+      if: ${{ github.ref == 'refs/heads/master' && env.THIS_VERSION_COMPARABLE > env.LATEST_VERSION_COMPARABLE }}
+      id: create_release
+      uses: actions/create-release@latest
+      env:
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      with:
+        tag_name: v${{ env.THIS_VERSION }}
+        release_name: Release v${{ env.THIS_VERSION }}
+        body: |
+          See the CHANGELOG for a list of features included in this release
+        draft: false
+        prerelease: true
     - name: configure PRO AWS credentials
+      if: ${{ github.ref == 'refs/heads/master' && env.THIS_VERSION_COMPARABLE > env.LATEST_VERSION_COMPARABLE }}
       uses: aws-actions/configure-aws-credentials@v1
       with:
         role-to-assume: ${{ secrets.ASSUME_ROLE }}
         role-session-name: samplerolesession
         aws-region: ${{ env.AWS_REGION }}
     - name:  Copy to PRO S3
+      if: ${{ github.ref == 'refs/heads/master' && env.THIS_VERSION_COMPARABLE > env.LATEST_VERSION_COMPARABLE }}
       run: |
         aws s3 sync ./site/ s3://${{ secrets.BUCKET_NAME }}/
     - name: Invalidate PRO CloudFront cache
+      if: ${{ github.ref == 'refs/heads/master' && env.THIS_VERSION_COMPARABLE > env.LATEST_VERSION_COMPARABLE }}
       run: |
         aws cloudfront create-invalidation --distribution-id ${{ secrets.DISTRIBUTION_ID }} --paths "/*"
+
