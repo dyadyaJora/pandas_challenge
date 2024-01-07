@@ -100,7 +100,7 @@ jobs:
         draft: false
         prerelease: true
     - name: configure PRO AWS credentials
-      if: ${{ github.ref == 'refs/heads/master' && env.THIS_VERSION_COMPARABLE > env.LATEST_VERSION_COMPARABLE }}
+#      if: ${{ github.ref == 'refs/heads/master' && env.THIS_VERSION_COMPARABLE > env.LATEST_VERSION_COMPARABLE }}
       uses: aws-actions/configure-aws-credentials@v1
       with:
         role-to-assume: ${{ secrets.ASSUME_ROLE }}
