@@ -90,9 +90,8 @@ jobs:
 #      if: ${{ github.ref == 'refs/heads/master' && env.THIS_VERSION_COMPARABLE > env.LATEST_VERSION_COMPARABLE }}
       id: create_release
       uses: actions/create-release@latest
-      env:
-        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       with:
+        token: ${{ secrets.GITHUB_TOKEN }}
         tag_name: v${{ env.THIS_VERSION }}
         release_name: Release v${{ env.THIS_VERSION }}
         body: |
