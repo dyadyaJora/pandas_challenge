@@ -60,7 +60,7 @@ jobs:
         aws s3 sync ./site/ s3://${{ secrets.BUCKET_NAME_LAB }}/$escaped_branch_name/$date_prefix$SHA_SHORT/
 
         aws s3 cp s3://${{ secrets.BUCKET_NAME_LAB }}/.branches .
-        bash ./scripts/s3branchrotate.sh $escaped_branch_name > .branches
+        bash ./scripts/s3branchrotate.sh $escaped_branch_name .branches
         echo "1"
         cat .branches
         lines_count=$(cat .branches | wc -l)
@@ -70,7 +70,7 @@ jobs:
         cat .branches
         aws s3 cp .branches s3://${{ secrets.BUCKET_NAME_LAB }}/
         echo "Branches uploaded!"
-        aws s3 rm --recursive s3://${{ secrets.BUCKET_NAME_LAB }}/$last_branch/
+#        aws s3 rm --recursive s3://${{ secrets.BUCKET_NAME_LAB }}/$last_branch/
 #        [ "$lines_count" -gt "5" ] && aws s3 rm --recursive s3://${{ secrets.BUCKET_NAME_LAB }}/$last_branch/
     - name: Create Github Release
       if: ${{ github.ref == 'refs/heads/master' && env.THIS_VERSION_COMPARABLE > env.LATEST_VERSION_COMPARABLE }}
