@@ -88,7 +88,7 @@ jobs:
 
         if [ "$versions_count" -gt "${{ env.MAX_COMMIT_PER_BRANCH_DEPLOYED }}" ]; then
             echo "Removing oldest version: $oldest_version"
-            aws s3 rm --recursive s3://${{ env.BUCKET_NAME_LAB }}/$escaped_branch_name/$oldest_version || echo "Error removing version"
+            aws s3 rm --recursive s3://${{ env.BUCKET_NAME }}/$escaped_branch_name/$oldest_version || echo "Error removing version"
         else
             echo "No need to remove versions."
         fi
