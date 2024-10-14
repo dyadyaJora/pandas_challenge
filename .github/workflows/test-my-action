@@ -1,0 +1,63 @@
+name: Build mkdocs site and upload to S3 - develop version
+
+on: workflow_dispatch
+
+env:
+  AWS_REGION : "us-east-1"
+  AWS_REGION_LAB: "us-east-1"
+  MAX_BRANCH_DEPLOYED: 5
+  MAX_COMMIT_PER_BRANCH_DEPLOYED: 3
+  MAX_PRO_VERSIONS: 3
+  BUCKET_NAME_LAB: "pandas-challenge-github-action-test-bucket"
+
+permissions:
+  id-token: write
+  contents: write
+  discussions: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download source
+      uses: actions/checkout@v3
+    - run: git fetch --depth=1 origin +refs/tags/*:refs/tags/* || true
+      name: Fetch git tags
+    - name: Install Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        cache: pip
+    - name: Install Python dependencies
+      run: |
+        pip install -r requirements.txt
+    - name: Build site
+      run: mkdocs build
+    - name: configure LAB AWS credentials
+      id: creds
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        role-to-assume: ${{ secrets.ASSUME_ROLE_LAB }}
+        role-session-name: samplerolesession
+        aws-region: ${{ env.AWS_REGION_LAB }}
+    - name: Install s3 deploy action
+      uses: actions/checkout@v3
+        with:
+          repository: dyadyaJora/s3-multibranch-deploy-preview
+          path: action
+    - name: Deploy
+      id: deploy
+      uses: ./action
+      with:
+        aws_region: "${{ env.AWS_REGION_LAB }}"
+        aws_bucket: "${{ env.BUCKET_NAME_LAB }}"
+        folder: "site"
+      env:
+        AWS_ACCESS_KEY_ID: "${{ steps.creds.outputs.aws-access-key-id }}"
+        AWS_SECRET_ACCESS_KEY: "${{ steps.creds.outputs.aws-secret-access-key }}"
+        AWS_SESSION_TOKEN: "${{ steps.creds.outputs.aws-session-token }}"
+        AWS_REGION: "${{ env.AWS_REGION_LAB }}"
+    - name: Print LAB DOCS_LINK
+      run: |
+        echo "Docs deploy is available at ${{steps.deploy.outputs.preview_url}}"
