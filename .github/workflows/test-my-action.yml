@@ -43,9 +43,9 @@ jobs:
         aws-region: ${{ env.AWS_REGION_LAB }}
     - name: Install s3 deploy action
       uses: actions/checkout@v3
-        with:
-          repository: dyadyaJora/s3-multibranch-deploy-preview
-          path: action
+      with:
+        repository: dyadyaJora/s3-multibranch-deploy-preview
+        path: action
     - name: Deploy
       id: deploy
       uses: ./action
