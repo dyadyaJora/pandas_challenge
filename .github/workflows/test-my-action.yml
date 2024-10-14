@@ -1,6 +1,7 @@
 name: Build mkdocs site and upload to S3 - develop version
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
 
 env:
   AWS_REGION : "us-east-1"
