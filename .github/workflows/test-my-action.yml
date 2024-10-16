@@ -35,14 +35,9 @@ jobs:
         pip install -r requirements.txt
     - name: Build site
       run: mkdocs build
-    - name: Install s3 deploy action
-      uses: actions/checkout@v3
-      with:
-        repository: dyadyaJora/s3-multibranch-deploy-preview
-        path: action
     - name: Deploy
       id: deploy
-      uses: ./action
+      uses: dyadyaJora/s3-multibranch-deploy-preview@main
       with:
         aws_region: "${{ env.AWS_REGION_LAB }}"
         aws_assume_role: "${{ secrets.ASSUME_ROLE_LAB }}"
