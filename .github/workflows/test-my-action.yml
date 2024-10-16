@@ -35,13 +35,6 @@ jobs:
         pip install -r requirements.txt
     - name: Build site
       run: mkdocs build
-    - name: configure LAB AWS credentials
-      id: creds
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        role-to-assume: ${{ secrets.ASSUME_ROLE_LAB }}
-        role-session-name: samplerolesession
-        aws-region: ${{ env.AWS_REGION_LAB }}
     - name: Install s3 deploy action
       uses: actions/checkout@v3
       with:
@@ -52,13 +45,9 @@ jobs:
       uses: ./action
       with:
         aws_region: "${{ env.AWS_REGION_LAB }}"
+        aws_assume_role: "${{ secrets.ASSUME_ROLE_LAB }}"
         aws_bucket: "${{ env.BUCKET_NAME_LAB }}"
         folder: "site"
-      env:
-        AWS_ACCESS_KEY_ID: "${{ steps.creds.outputs.aws-access-key-id }}"
-        AWS_SECRET_ACCESS_KEY: "${{ steps.creds.outputs.aws-secret-access-key }}"
-        AWS_SESSION_TOKEN: "${{ steps.creds.outputs.aws-session-token }}"
-        AWS_REGION: "${{ env.AWS_REGION_LAB }}"
     - name: Print LAB DOCS_LINK
       run: |
         echo "Docs deploy is available at ${{steps.deploy.outputs.preview_url}}"
